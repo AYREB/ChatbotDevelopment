@@ -9,9 +9,10 @@ from keras.layers import Dense, Embedding, GlobalAveragePooling1D, BatchNormaliz
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import LabelEncoder
+import pickle
 
 
-with open('Z:\BrunoPersonalFiles\ChatbotDevelopment\intents.json') as file:
+with open(r'Z:\BrunoPersonalFiles\ChatbotDevelopment\Test1\intents.json') as file:
     data = json.load(file)
     
 training_sentences = []
@@ -87,7 +88,7 @@ history = model.fit(padded_sequences, np.array(training_labels), epochs=epochs)
 # to save the trained model
 model.save("chat_model")
 
-import pickle
+
 
 # to save the fitted tokenizer
 with open('tokenizer.pickle', 'wb') as handle:

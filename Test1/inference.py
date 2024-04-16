@@ -10,13 +10,13 @@ from colorama import Fore, Style, Back
 import random
 import pickle
 
-with open("intents.json") as file:
+with open(r"Z:\BrunoPersonalFiles\ChatbotDevelopment\Test1\intents.json") as file:
     data = json.load(file)
 
 
 def chat():
     # load trained model
-    model = keras.models.load_model('chat_model')
+    model = keras.models.load_model(r'Z:\BrunoPersonalFiles\ChatbotDevelopment\chat_model')
 
     # load tokenizer object
     with open('tokenizer.pickle', 'rb') as handle:

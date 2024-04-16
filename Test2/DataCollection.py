@@ -1,48 +1,66 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-from nltk.corpus import stopwords
+import nltk
+from urllib.parse import urljoin
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
-# Function to scrape text data from a website
-def scrape_website(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    # Extract text from all paragraphs
-    paragraphs = soup.find_all('p')
-    text = ' '.join([p.get_text() for p in paragraphs])
-    return text
+# Ensure you've downloaded the necessary NLTK resources
+# nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('stopwords')
 
-# Function to preprocess text data
+def scrape_website(url, depth, scraped_urls=set()):
+    if depth == 0 or url in scraped_urls:
+        return ""
+
+    print(f"Scraping {url}")
+    scraped_urls.add(url)
+    text_data = ""
+    try:
+        response = requests.get(url, timeout=5)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Process the text of the current page
+        paragraphs = soup.find_all('p')
+        text_data += ' '.join([p.get_text() for p in paragraphs])
+
+        # Find all links on the page and follow them up to depth - 1
+        links = soup.find_all('a', href=True)
+        for link in links:
+            full_link = urljoin(url, link['href'])
+            text_data += scrape_website(full_link, depth - 1, scraped_urls)
+    except Exception as e:
+        print(f"Failed to scrape {url}: {e}")
+    return text_data
+
 def preprocess_text(text):
-    # Remove HTML tags
     text = re.sub(r'<.*?>', '', text)
-    # Remove non-alphanumeric characters and convert to lowercase
-    text = re.sub(r'[^a-zA-Z0-9]', ' ', text).lower()
-    # Tokenization
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text).lower()
     tokens = word_tokenize(text)
-    # Remove stop words
-    stop_words = set(stopwords.words('english'))
-    tokens = [word for word in tokens if word not in stop_words]
-    # Lemmatization
+    stop_words = set(nltk.corpus.stopwords.words('english'))
+    tokens = [word for word in tokens if not word in stop_words]
     lemmatizer = WordNetLemmatizer()
     tokens = [lemmatizer.lemmatize(word) for word in tokens]
-    # Join tokens back into a string
-    preprocessed_text = ' '.join(tokens)
-    return preprocessed_text
+    return ' '.join(tokens)
 
-# URL of the website to scrape
-url = 'https://flask.palletsprojects.com/en/3.0.x/'
+# Starting URLs
+urls = [
+    'https://www.tensorflow.org/tutorials',
+    # Add more URLs as needed
+]
+depth = 2
 
-# Scrape text data from the website
-text_data = scrape_website(url)
+# Combine text from all URLs and preprocess
+combined_text = ""
+for url in urls:
+    combined_text += scrape_website(url, depth)  # Adjust depth as needed
 
-# Preprocess the text data
-preprocessed_data = preprocess_text(text_data)
+preprocessed_data = preprocess_text(combined_text)
 
 # Write preprocessed data to a text file
-with open('preprocessed_data.txt', 'w') as file:
+with open('large_text_corpus.txt', 'w') as file:
     file.write(preprocessed_data)
 
 print("Preprocessed data saved to preprocessed_data.txt")

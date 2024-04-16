@@ -1,24 +1,22 @@
-
 import json 
 import numpy as np 
 import tensorflow as tf
-import keras
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Embedding, GlobalAveragePooling1D, BatchNormalization, Dropout
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import LabelEncoder
+import pickle
 
 
-with open('Z:\BrunoPersonalFiles\ChatbotDevelopment\intents.json') as file:
+with open('Z:\BrunoPersonalFiles\ChatbotDevelopment\Test2\intents.json') as file:
     data = json.load(file)
     
 training_sentences = []
 training_labels = []
 labels = []
 responses = []
-
 
 for intent in data['intents']:
     for pattern in intent['patterns']:
@@ -31,12 +29,9 @@ for intent in data['intents']:
         
 num_classes = len(labels)
 
-
 lbl_encoder = LabelEncoder()
 lbl_encoder.fit(training_labels)
 training_labels = lbl_encoder.transform(training_labels)
-
-
 
 vocab_size = 1000
 embedding_dim = 16
@@ -48,7 +43,6 @@ tokenizer.fit_on_texts(training_sentences)
 word_index = tokenizer.word_index
 sequences = tokenizer.texts_to_sequences(training_sentences)
 padded_sequences = pad_sequences(sequences, truncating='post', maxlen=max_len)
-
 
 # Create a Sequential model
 model = Sequential()
@@ -83,16 +77,17 @@ model.summary()
 epochs = 500
 history = model.fit(padded_sequences, np.array(training_labels), epochs=epochs)
 
+# Save the trained model
+model.save(r"Z:\BrunoPersonalFiles\ChatbotDevelopment\Test2\BaseModelFolder\chat_model")
 
-# to save the trained model
-model.save("chat_model")
 
-import pickle
 
-# to save the fitted tokenizer
-with open('tokenizer.pickle', 'wb') as handle:
+# Save the fitted tokenizer
+with open(r'Z:\BrunoPersonalFiles\ChatbotDevelopment\Test2\BaseModelFolder\tokenizer.pickle', 'wb') as handle:
     pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
-# to save the fitted label encoder
-with open('label_encoder.pickle', 'wb') as ecn_file:
+# Save the fitted label encoder
+with open(r'Z:\BrunoPersonalFiles\ChatbotDevelopment\Test2\BaseModelFolder\label_encoder.pickle', 'wb') as ecn_file:
     pickle.dump(lbl_encoder, ecn_file, protocol=pickle.HIGHEST_PROTOCOL)
+
+print(num_classes)
