@@ -23,7 +23,7 @@
         {
             "tag": "name",
             "patterns": ["what is your name", "what should I call you", "whats your name?"],
-            "responses": ["You can call me Joana.", "I'm Joana!", "Just call me as Joana"]
+            "responses": ["You can call me Joana.", "I'm Joana!", "Just call me Joana"]
         },
         {
             "tag": "help",
